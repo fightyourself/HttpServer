@@ -1,4 +1,4 @@
-#include "TcpServer.h"
+#include "include/HttpServer.h"
 
 
 
@@ -8,6 +8,6 @@ int main(int argc, char *argv[]){
         printf("usage:./server ip port\n");
         return -1;
     }
-    TcpServer server(argv[1],atoi(argv[2]));
+    HttpServer server(argv[1],atoi(argv[2]));
     server.start();
 }

@@ -1,4 +1,4 @@
-#include "InetAddress.h"
+#include "../include/InetAddress.h"
 
 /*
 class InetAddress{

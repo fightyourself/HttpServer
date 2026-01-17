@@ -36,7 +36,7 @@ void TcpServer::connection_new(Socket *clientSock){
     Connection *connection = new Connection(clientSock,subLoops_[clientSock->fd()%3]);
     connection->set_connection_close_cb(std::bind(&TcpServer::connection_close,this,connection));
     connection->set_connection_error_cb(std::bind(&TcpServer::handle_error_connection,this,connection));
-    connection->set_on_message_cb(std::bind(&TcpServer::on_message,this,std::placeholders::_1,std::placeholders::_2));
+    connection->set_connection_read_cb(std::bind(&TcpServer::tcp_read,this,std::placeholders::_1));
     connection->set_send_over_cb(std::bind(&TcpServer::send_over,this,std::placeholders::_1));
     connections_[connection->fd()] = connection;
     printf("client(fd=%d,ip=%s,port=%d) connect\n",clientSock->fd(),clientSock->ip().c_str(),clientSock->port());
@@ -54,9 +54,8 @@ void TcpServer::handle_error_connection(Connection *conn){
     delete conn;
 }
 
-void TcpServer::on_message(Connection *conn,std::string &message){
-    printf("recv(%d):%s\n",conn->fd(),message.c_str());
-    conn->send(message.data(),message.size());
+void TcpServer::tcp_read(Connection *conn){
+    tcpReadCb_(conn);
 }
 
 void TcpServer::send_over(Connection *conn){
@@ -65,4 +64,8 @@ void TcpServer::send_over(Connection *conn){
 
 void TcpServer::epoll_timeout(EventLoop *loop){
     printf("epoll timeout\n");
+}
+
+void TcpServer::set_tcp_read_cb(std::function<void(Connection *)> func){
+    tcpReadCb_ = func;
 }

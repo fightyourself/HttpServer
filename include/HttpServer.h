@@ -2,9 +2,11 @@
 #include "TcpServer.h"
 class HttpServer{
 private:
-    TcpServer tcpServer;
+    TcpServer tcpServer_;
 public:
-    HttpServer();
+    HttpServer(const std::string& ip,uint16_t port);
     ~HttpServer();
-    
+
+    void handle_tcp_read(Connection *conn);
+    void start();
 };

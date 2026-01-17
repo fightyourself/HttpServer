@@ -19,13 +19,13 @@ void Epoll::update_channel(Channel *ch) const{
         ch->set_isInpoll();
     }
 }
-
+#include <sys/syscall.h>
 std::vector<Channel *> Epoll::loop(int timeout){
     std::vector<Channel *> evs;
     bzero(events_,sizeof(events_));
     int infds =epoll_wait(epollFd_,events_,MaxElement,timeout);
     if(infds<0){
-        printf("%s:%s:%d bind error:%d",__FILE__,__FUNCTION__,__LINE__,errno);
+        printf("[%d]%s:%s:%d:%d\n",syscall(SYS_gettid),__FILE__,__FUNCTION__,__LINE__,errno);
         exit(-1);
     }
     if(infds==0){
