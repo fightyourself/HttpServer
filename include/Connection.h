@@ -32,7 +32,8 @@ public:
     void connection_close();
     void connection_error();
     void connection_read();
-    void send(char *data,int len);
+    void send(const char *data,int len);
+    void send(const std::string &data);
     void send_all_data();
 
     void set_connection_close_cb(std::function<void()>func);

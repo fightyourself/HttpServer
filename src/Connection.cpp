@@ -72,9 +72,13 @@ void Connection::connection_read(){
 }
 
 
-void Connection::send(char *data,int len){
+void Connection::send(const char *data,int len){
     outputBuf_.append(data,len);
     clientChan_->enable_write();
+}
+
+void Connection::send(const std::string&data){
+    send(data.data(),data.size());
 }
 
 void Connection::send_all_data(){

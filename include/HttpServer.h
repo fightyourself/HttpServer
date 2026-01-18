@@ -1,5 +1,6 @@
 #pragma once
 #include "TcpServer.h"
+#include "HttpResponse.h"
 class HttpServer{
 private:
     TcpServer tcpServer_;

@@ -31,7 +31,7 @@ int HttpParser::parse(HttpRequest * req){
     while(true){
         char line[2048];
         switch (state_){
-        case REQUEST_LINE:
+        case REQUEST_LINE:{
             if(get_line(line)){
                 size_t i = 0;
                 size_t j = 0;
@@ -72,10 +72,15 @@ int HttpParser::parse(HttpRequest * req){
                 state_ = REQUEST_HEADER;
             }else return 0;
             break;
-        case REQUEST_HEADER:
+        }
+        case REQUEST_HEADER:{
             while(get_line(line)){
                 if(strcmp(line,"\r\n")==0){
-                    state_ = COMPLETE;
+                    if(req->headers().find("Content-Length")!=req->headers().end()){
+                        req->set_content_length(atoi(req->headers()["Content-Length"].c_str()));
+                    }
+                    if(req->content_length() <=0) state_ = COMPLETE;
+                    else state_ = REQUEST_BODY;
                     break;
                 }
                 size_t i = 0;
@@ -88,13 +93,24 @@ int HttpParser::parse(HttpRequest * req){
                 std::string value(&line[j],i-j);
                 req->add_header(key,value);
             }
-            if(state_ == COMPLETE) break;
+            if(state_ != REQUEST_HEADER) break;
             return 0;
-        case COMPLETE:
+        }
+        case REQUEST_BODY:{
+            if(buf_.size()-pos_>=req->content_length()){
+                req->set_has_body();
+                req->set_body(std::string(&(buf_.data()[pos_]),req->content_length()));
+                state_ = COMPLETE;
+                break;
+            }
+            return 0;
+        }
+        case COMPLETE:{
             buf_.erase(0,pos_);
             pos_ = 0;
             state_ = REQUEST_LINE;
             return 1;
+        }
         default:
             break;
         }

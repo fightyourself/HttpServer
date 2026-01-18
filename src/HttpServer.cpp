@@ -21,14 +21,8 @@ void HttpServer::handle_tcp_read(Connection *conn){
             HttpRequest req;
             while(conn->parser().parse(&req)){
                 printf("method = %s,path = %s, version = %s\n",req.method(),req.path(),req.version());
+                HttpResponse resp;
                 std::string html =
-                    "HTTP/1.1 200 OK\r\n"
-                    "Date: Sat, 17 Jan 2026 23:16:00 GMT\r\n"
-                    "Server: MySimpleServer/1.0\r\n"
-                    "Content-Type: text/html; charset=UTF-8\r\n"
-                    "Content-Length: 196\r\n"
-                    "Connection: close\r\n"
-                    "\r\n"
                     "<!DOCTYPE html>\r\n"
                     "<html>\r\n"
                     "<head>\r\n"
@@ -39,7 +33,9 @@ void HttpServer::handle_tcp_read(Connection *conn){
                     "    <p>This is a basic HTML page served via HTTP.</p>\r\n"
                     "</body>\r\n"
                     "</html>\r\n";
-                conn->send(html.data(),html.size());
+                resp.set_header("Content-Type","text/html");
+                resp.set_body(html);
+                conn->send(resp.to_string());
             }
             break;
         }
