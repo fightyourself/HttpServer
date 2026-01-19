@@ -9,15 +9,15 @@ HttpRequest::~HttpRequest(){
 
 }
 
-const char * HttpRequest::method() const{
+const std::string & HttpRequest::method() const{
     return method_;
 }
 
-const char * HttpRequest::path() const{
+const std::string & HttpRequest::path() const{
     return path_;
 }
 
-const char * HttpRequest::version() const{
+const std::string & HttpRequest::version() const{
     return version_;
 }
 
@@ -27,6 +27,10 @@ std::string HttpRequest::body() const{
 
 size_t HttpRequest::content_length()const{
     return contentLength_;
+}
+
+std::string HttpRequest::queryString() const{
+    return queryString_;
 }
 
 std::map<std::string,std::string> HttpRequest::headers() {
@@ -48,17 +52,21 @@ void HttpRequest::set_has_body(){
 }
 
 void HttpRequest::set_method(const char * method){
-    strcpy(method_,method);
+    method_.append(method);
 }
 
 void HttpRequest::set_path(const char * path){
-    strcpy(path_,path);
+    path_.append(path);
 }
 
 void HttpRequest::set_version(const char * version){
-    strcpy(version_,version);
+    version_.append(version);
 }
 
 void HttpRequest::set_body(const std::string &body){
     body_ = body;
+}
+
+void HttpRequest::set_query_string(const std::string &queryString){
+    queryString_ = queryString;
 }

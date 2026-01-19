@@ -52,11 +52,15 @@ int HttpParser::parse(HttpRequest * req){
                 while(line[i] && isspace(line[i])) i++;
                 j = i;
                 while(line[i] && !isspace(line[i])) i++;
+                if(strcasecmp(method,"GET")==0){
+                    size_t t = j;
+                    while(line[t] && line[t]!='?')++t;
+                    if(line[t]=='?')req->set_query_string(std::string(&line[t+1],i-t));
+                }
                 char path[1024];
                 len = i - j;
                 memcpy(path,reinterpret_cast<void*>(&line[j]),len);
                 path[len] = '\0';
-
                 //version
                 while(line[i] && isspace(line[i])) i++;
                 j = i;

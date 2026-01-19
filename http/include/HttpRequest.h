@@ -4,9 +4,9 @@
 
 class HttpRequest{
 private:
-    char method_[16];
-    char path_[1024];
-    char version_[16];
+    std::string method_;
+    std::string path_;
+    std::string version_;
     std::map<std::string,std::string> headers_;
     size_t contentLength_ = 0;
     bool hasBody_ = false;
@@ -16,11 +16,12 @@ public:
     HttpRequest();
     ~HttpRequest();
 
-    const char * method() const;
-    const char * path() const;
-    const char * version() const;
+    const std::string & method() const;
+    const std::string & path() const;
+    const std::string & version() const;
     std::string body() const;
     size_t content_length() const;
+    std::string queryString() const;
 
     std::map<std::string,std::string> headers();
 
@@ -31,4 +32,5 @@ public:
     void set_content_length(size_t content_size);
     void set_has_body();
     void set_body(const std::string& body);
+    void set_query_string(const std::string& queryString);
 };
