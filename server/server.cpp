@@ -1,7 +1,4 @@
-#include "include/HttpServer.h"
-
-
-
+#include "HttpServer.h"
 
 int main(int argc, char *argv[]){
     if( argc!=3){

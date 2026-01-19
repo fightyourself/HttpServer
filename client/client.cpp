@@ -5,8 +5,8 @@
 #include <netinet/in.h>
 #include <cstring>
 #include <unistd.h>
-#include "include/InetAddress.h"
-#include "include/Socket.h"
+#include "InetAddress.h"
+#include "Socket.h"
 int main(int argc, char *argv[]){
     if(argc!=3){
         printf("usage:./client ip port\n");return -1;

@@ -14,7 +14,7 @@
 //     return 0;
 // }
 
-#include "../include/HttpServer.h"
+#include "HttpServer.h"
 
 int main(int argc, char *argv[]){
     HttpServer server("127.0.0.1",5005);
