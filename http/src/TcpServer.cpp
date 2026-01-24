@@ -1,6 +1,6 @@
 #include "TcpServer.h"
 
-TcpServer::TcpServer(const std::string &ip,uint16_t port):mainLoop_(),subLoops_(),acceptor_(ip,port,&mainLoop_),connections_(),ioThreadPool_(3),tcpReadCb_(){
+TcpServer::TcpServer(const std::string &ip,uint16_t port):mainLoop_(),subLoops_(),acceptor_(ip,port,&mainLoop_),connections_(),ioThreadPool_(3,"io"),tcpReadCb_(){
     acceptor_.set_new_connnection_cb(std::bind(&TcpServer::connection_new,this,std::placeholders::_1));
     mainLoop_.set_epoll_timeout_cb(std::bind(&TcpServer::epoll_timeout,this,std::placeholders::_1));
     for(int i =0;i<3;i++){
@@ -24,7 +24,7 @@ void TcpServer::start(){
 void TcpServer::connection_new(std::unique_ptr<Socket> clientSock){
     printf("client(fd=%d,ip=%s,port=%d) connect\n",clientSock->fd(),clientSock->ip().c_str(),clientSock->port());
     int fd = clientSock->fd();
-    spConnection connection(new Connection(std::move(clientSock),subLoops_[fd%3].get()));
+    spConnection connection = std::make_shared<Connection>(std::move(clientSock),subLoops_[fd%3].get());
     connection->set_connection_close_cb(std::bind(&TcpServer::connection_close,this,std::placeholders::_1));
     connection->set_connection_error_cb(std::bind(&TcpServer::handle_error_connection,this,std::placeholders::_1));
     connection->set_connection_read_cb(std::bind(&TcpServer::tcp_read,this,std::placeholders::_1));
@@ -51,7 +51,7 @@ void TcpServer::tcp_read(spConnection conn){
 }
 
 void TcpServer::send_over(spConnection conn){
-    printf("send(%d) over\n",conn->fd());
+    // printf("send(%d) over\n",conn->fd());
 }
 
 void TcpServer::epoll_timeout(EventLoop *loop){

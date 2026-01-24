@@ -72,15 +72,25 @@ void Connection::connection_read(){
     connectionReadCb_(shared_from_this());
 }
 
-
-void Connection::send(const char *data,int len){
-    outputBuf_.append(data,len);
+void Connection::send_init(const std::string&data){
+    printf("Connectin::send_init() in thread:%d\n",syscall(SYS_gettid));
+    outputBuf_.append(data.data(),data.size());
     clientChan_->enable_write();
 }
 
+
+
 void Connection::send(const std::string&data){
-    if(!isClosed_){
-        send(data.data(),data.size());
+    if(isClosed_) {
+        printf("connection already closed, no send\n");
+        return;
+    }
+    if(loop_->isInRunThread()){
+        printf("Connection::send() in run thread:%d\n",syscall(SYS_gettid));
+        send_init(data);
+    }else{
+        printf("Connection::send() not in run thread:%d\n",syscall(SYS_gettid));
+        loop_->notify_send_event(std::bind(&Connection::send_init,this,data));
     }
 }
 

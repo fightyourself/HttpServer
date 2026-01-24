@@ -24,6 +24,7 @@ private:
     std::function<void(spConnection)> connectionErrorCb_;
     std::function<void(spConnection)> connectionReadCb_;
     std::function<void(spConnection)> sendOverCb_;
+    void send_init(const std::string &data);
 public:
     Connection(std::unique_ptr<Socket> clientSock,EventLoop *loop);
     ~Connection();
@@ -36,7 +37,6 @@ public:
     void remove_channel_from_loop();
     void set_is_closed();
 
-    void send(const char *data,int len);
     void send(const std::string &data);
     void send_all_data();
 

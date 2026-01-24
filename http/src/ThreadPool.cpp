@@ -2,9 +2,10 @@
 #include <syscall.h>
 #include <unistd.h>
 
-ThreadPool::ThreadPool(int num_threads):threads_(),tasks_(),mtx_(),cv_(),stop_(false){
+ThreadPool::ThreadPool(int num_threads,const std::string &poolType):threads_(),tasks_(),mtx_(),cv_(),stop_(false),poolType_(poolType){
     for(int i=0;i<num_threads;i++){
         threads_.emplace_back([this]{
+            printf("%s thread created:%d\n",poolType_.c_str(),syscall(SYS_gettid));
             while(true){
                 std::function<void()> task;
                 {
@@ -38,4 +39,8 @@ void ThreadPool::add_task(std::function<void()>task){
         tasks_.push(task);
     }
     cv_.notify_one();
+}
+
+size_t ThreadPool::size() const{
+    return threads_.size();
 }

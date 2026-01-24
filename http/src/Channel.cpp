@@ -78,7 +78,7 @@ void Channel::handle(){
         // printf("EPOLLRDHUP\n");
         disconnectCb_();
     }else if(revents_ & (EPOLLIN | EPOLLPRI)){
-        printf("EPOLLIN | EPOLLPRI\n");
+        // printf("EPOLLIN | EPOLLPRI\n");
         readCallback_();
     }else if(revents_ & EPOLLOUT){
         // printf("EPOLLOUT\n");
