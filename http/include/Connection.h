@@ -15,8 +15,8 @@ using spConnection = std::shared_ptr<Connection>;
 class Connection:public std::enable_shared_from_this<Connection> {
 private:
     EventLoop *loop_;
-    Socket *clientSock_;
-    Channel *clientChan_;
+    std::unique_ptr<Socket> clientSock_;
+    std::unique_ptr<Channel> clientChan_;
     HttpParser parser_;
     Buffer outputBuf_;
     std::atomic_bool isClosed_;
@@ -25,7 +25,7 @@ private:
     std::function<void(spConnection)> connectionReadCb_;
     std::function<void(spConnection)> sendOverCb_;
 public:
-    Connection(Socket *clientSock,EventLoop *loop);
+    Connection(std::unique_ptr<Socket> clientSock,EventLoop *loop);
     ~Connection();
     std::string ip()const;
     uint16_t port() const;
@@ -33,7 +33,7 @@ public:
     HttpParser &parser();
     Buffer & ouputBuf();
 
-    void remove_channel_from_loop() const;
+    void remove_channel_from_loop();
     void set_is_closed();
 
     void send(const char *data,int len);

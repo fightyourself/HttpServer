@@ -16,7 +16,7 @@ public:
 };
 */
 
-Socket::Socket(int fd):fd_(fd){
+Socket::Socket(int fd):fd_(fd),ip_(),port_(){
 
 }
 

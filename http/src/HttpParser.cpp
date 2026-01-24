@@ -1,6 +1,6 @@
 #include "../include/HttpParser.h"
 #include <cstring>
-HttpParser::HttpParser(){
+HttpParser::HttpParser():buf_(),pos_(0),state_(REQUEST_LINE){
 
 }
 

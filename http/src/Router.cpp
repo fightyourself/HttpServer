@@ -1,6 +1,6 @@
 #include "Router.h"
 
-Router::Router(){
+Router::Router():roots_(),handlers_(){
 
 }
 

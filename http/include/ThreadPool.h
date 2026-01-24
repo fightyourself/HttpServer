@@ -12,7 +12,7 @@ private:
     std::queue<std::function<void()>> tasks_;
     std::mutex mtx_;
     std::condition_variable cv_;
-    std::atomic_bool stop_ = false;
+    std::atomic_bool stop_;
 public:
     ThreadPool(int num_threads);
     ~ThreadPool();

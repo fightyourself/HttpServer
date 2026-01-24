@@ -12,8 +12,8 @@ enum ParseState{
 class HttpParser{
 private:
     Buffer buf_;
-    size_t pos_=0;
-    ParseState state_ = REQUEST_LINE;
+    size_t pos_;
+    ParseState state_;
     int get_line(char *buf);
 public:
     HttpParser();

@@ -1,5 +1,5 @@
 #include "Trie.h"
-Trie::Trie(const std::string &part,Trie *parent,bool isWild):part_(part),parent_(parent),isWild_(isWild){
+Trie::Trie(const std::string &part,Trie *parent,bool isWild):pattern_(),part_(part),parent_(parent),isWild_(isWild){
 
 }
 

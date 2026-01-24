@@ -1,6 +1,6 @@
 #include "Channel.h"
 #include <unistd.h>
-Channel::Channel(int fd,EventLoop * loop):fd_(fd),loop_(loop){
+Channel::Channel(int fd,EventLoop * loop):loop_(loop),fd_(fd){
 
 }
 
@@ -78,7 +78,7 @@ void Channel::handle(){
         // printf("EPOLLRDHUP\n");
         disconnectCb_();
     }else if(revents_ & (EPOLLIN | EPOLLPRI)){
-        // printf("EPOLLIN | EPOLLPRI\n");
+        printf("EPOLLIN | EPOLLPRI\n");
         readCallback_();
     }else if(revents_ & EPOLLOUT){
         // printf("EPOLLOUT\n");

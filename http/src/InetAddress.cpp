@@ -16,7 +16,7 @@ public:
 };
 */
 
-InetAddress::InetAddress(){
+InetAddress::InetAddress():addr_(){
     addr_.sin_family = AF_INET;
 }
 

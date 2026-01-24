@@ -1,10 +1,11 @@
 #pragma once
 #include "Epoll.h"
+#include <memory>
 class Epoll;
 
 class EventLoop{
 private:
-    Epoll *ep_;
+    std::unique_ptr<Epoll> ep_;
     std::function<void(EventLoop *)> epollTimeoutCb_;
 public:
     EventLoop();

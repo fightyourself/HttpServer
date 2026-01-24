@@ -8,8 +8,8 @@ private:
     std::string path_;
     std::string version_;
     std::map<std::string,std::string> headers_;
-    size_t contentLength_ = 0;
-    bool hasBody_ = false;
+    size_t contentLength_;
+    bool hasBody_;
     std::string body_;
     std::string queryString_;
 public:

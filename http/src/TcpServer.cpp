@@ -1,43 +1,35 @@
 #include "TcpServer.h"
 
-TcpServer::TcpServer(const std::string &ip,uint16_t port){
-    ioThreadPool_ = new ThreadPool(3);
-    mainLoop_ = new EventLoop;
-    acceptor_ = new Acceptor(ip,port,mainLoop_);
-    acceptor_->set_new_connnection_cb(std::bind(&TcpServer::connection_new,this,std::placeholders::_1));
-    mainLoop_->set_epoll_timeout_cb(std::bind(&TcpServer::epoll_timeout,this,std::placeholders::_1));
+TcpServer::TcpServer(const std::string &ip,uint16_t port):mainLoop_(),subLoops_(),acceptor_(ip,port,&mainLoop_),connections_(),ioThreadPool_(3),tcpReadCb_(){
+    acceptor_.set_new_connnection_cb(std::bind(&TcpServer::connection_new,this,std::placeholders::_1));
+    mainLoop_.set_epoll_timeout_cb(std::bind(&TcpServer::epoll_timeout,this,std::placeholders::_1));
     for(int i =0;i<3;i++){
-        subLoops_.push_back(new EventLoop);
+        subLoops_.emplace_back(new EventLoop);
         subLoops_[i]->set_epoll_timeout_cb(std::bind(&TcpServer::epoll_timeout,this,std::placeholders::_1));
-        ioThreadPool_->add_task(std::bind(&EventLoop::run,subLoops_[i]));
+        ioThreadPool_.add_task(std::bind(&EventLoop::run,subLoops_[i].get()));
     }
-
 }
 
 TcpServer::~TcpServer(){
-    delete mainLoop_;
-    delete acceptor_;
-    for (auto &loop:subLoops_){
-        delete loop;
-    }
-    
+
 }
 
 void TcpServer::start(){
-    mainLoop_->run();
+    mainLoop_.run();
     for(auto &loop :subLoops_){
         loop->run();
     }
 }
 
-void TcpServer::connection_new(Socket *clientSock){
-    spConnection connection(new Connection(clientSock,subLoops_[clientSock->fd()%3]));
+void TcpServer::connection_new(std::unique_ptr<Socket> clientSock){
+    printf("client(fd=%d,ip=%s,port=%d) connect\n",clientSock->fd(),clientSock->ip().c_str(),clientSock->port());
+    int fd = clientSock->fd();
+    spConnection connection(new Connection(std::move(clientSock),subLoops_[fd%3].get()));
     connection->set_connection_close_cb(std::bind(&TcpServer::connection_close,this,std::placeholders::_1));
     connection->set_connection_error_cb(std::bind(&TcpServer::handle_error_connection,this,std::placeholders::_1));
     connection->set_connection_read_cb(std::bind(&TcpServer::tcp_read,this,std::placeholders::_1));
     connection->set_send_over_cb(std::bind(&TcpServer::send_over,this,std::placeholders::_1));
     connections_[connection->fd()] = connection;
-    printf("client(fd=%d,ip=%s,port=%d) connect\n",clientSock->fd(),clientSock->ip().c_str(),clientSock->port());
 }
 
 void TcpServer::connection_close(spConnection conn){

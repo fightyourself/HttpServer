@@ -1,7 +1,7 @@
 #include "../include/HttpResponse.h"
 #include <sstream>
 
-HttpResponse::HttpResponse(int code):statusCode_(code),statusMessage_(getDefaultStateMessage(code)){
+HttpResponse::HttpResponse(int code):statusCode_(code),statusMessage_(getDefaultStateMessage(code)),headers_(),body_(){
 
 }
 

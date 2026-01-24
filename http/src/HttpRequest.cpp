@@ -1,6 +1,6 @@
 #include "../include/HttpRequest.h"
 #include <cstring>
-HttpRequest::HttpRequest(){
+HttpRequest::HttpRequest():method_(),path_(),version_(),headers_(),contentLength_(0),hasBody_(false),body_(),queryString_(){
 
 }
 

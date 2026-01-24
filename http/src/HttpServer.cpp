@@ -1,6 +1,6 @@
 #include "HttpServer.h"
 
-HttpServer::HttpServer(const std::string& ip,uint16_t port):tcpServer_(ip,port),workThreadPool_(3){
+HttpServer::HttpServer(const std::string& ip,uint16_t port):tcpServer_(ip,port),router_(),workThreadPool_(3){
     tcpServer_.set_tcp_read_cb(std::bind(&HttpServer::handle_tcp_read,this,std::placeholders::_1));
 }
 

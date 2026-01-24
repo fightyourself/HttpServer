@@ -1,10 +1,10 @@
 #include "EventLoop.h"
-EventLoop::EventLoop():ep_(new Epoll){
+EventLoop::EventLoop():ep_(new Epoll),epollTimeoutCb_(){
 
 }
 
 EventLoop::~EventLoop(){
-    delete ep_;
+
 }
 #include <sys/syscall.h>
 void EventLoop::run(){
@@ -19,7 +19,7 @@ void EventLoop::run(){
 }
 
 Epoll * EventLoop::ep() const{
-    return ep_;
+    return ep_.get();
 }
 
 void EventLoop::set_epoll_timeout_cb(std::function<void(EventLoop *)> func){

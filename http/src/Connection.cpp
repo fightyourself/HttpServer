@@ -1,7 +1,8 @@
 #include "../include/Connection.h"
 
-Connection::Connection(Socket *clientSock,EventLoop *loop):clientSock_(clientSock),loop_(loop),isClosed_(false){
-    clientChan_ = new Channel(clientSock->fd(),loop_);
+Connection::Connection(std::unique_ptr<Socket> clientSock,EventLoop *loop):loop_(loop),clientSock_(std::move(clientSock)),
+clientChan_(new Channel(clientSock_->fd(),loop_)),parser_(),outputBuf_(),isClosed_(false),connectionCloseCb_(),
+connectionErrorCb_(),connectionReadCb_(),sendOverCb_(){
     clientChan_->set_et();
     clientChan_->set_read_callback(std::bind(&Connection::connection_read,this));
     clientChan_->set_disconnect_cb(std::bind(&Connection::connection_close,this));
@@ -12,8 +13,6 @@ Connection::Connection(Socket *clientSock,EventLoop *loop):clientSock_(clientSoc
 
 Connection::~Connection(){
     // printf("connection destruction\n");
-    delete clientSock_;
-    delete clientChan_;
 }
 
 std::string Connection::ip()const{
@@ -36,8 +35,8 @@ Buffer & Connection::ouputBuf(){
     return outputBuf_;
 }
 
-void Connection::remove_channel_from_loop()const{
-    loop_->ep()->remove_channel(clientChan_);
+void Connection::remove_channel_from_loop(){
+    loop_->ep()->remove_channel(clientChan_.get());
 }
 
 void Connection::set_is_closed() {
@@ -75,7 +74,6 @@ void Connection::connection_read(){
 
 
 void Connection::send(const char *data,int len){
-    printf("send\n");
     outputBuf_.append(data,len);
     clientChan_->enable_write();
 }

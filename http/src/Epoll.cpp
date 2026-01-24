@@ -1,6 +1,6 @@
 #include "Epoll.h"
 
-Epoll::Epoll():epollFd_(epoll_create(1)){
+Epoll::Epoll():epollFd_(epoll_create(1)),events_(){
 
 }
 

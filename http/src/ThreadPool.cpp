@@ -2,7 +2,7 @@
 #include <syscall.h>
 #include <unistd.h>
 
-ThreadPool::ThreadPool(int num_threads){
+ThreadPool::ThreadPool(int num_threads):threads_(),tasks_(),mtx_(),cv_(),stop_(false){
     for(int i=0;i<num_threads;i++){
         threads_.emplace_back([this]{
             while(true){
