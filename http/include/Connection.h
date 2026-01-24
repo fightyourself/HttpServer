@@ -5,21 +5,25 @@
 #include "Buffer.h"
 #include "../include/HttpParser.h"
 #include "../include/HttpRequest.h"
+#include <memory>
+#include <atomic>
 
 class EventLoop;
 class Channel;
-
-class Connection{
+class Connection;
+using spConnection = std::shared_ptr<Connection>;
+class Connection:public std::enable_shared_from_this<Connection> {
 private:
     EventLoop *loop_;
     Socket *clientSock_;
     Channel *clientChan_;
     HttpParser parser_;
     Buffer outputBuf_;
-    std::function<void()> connectionCloseCb_;
-    std::function<void()> connectionErrorCb_;
-    std::function<void(Connection*)> connectionReadCb_;
-    std::function<void(Connection*)> sendOverCb_;
+    std::atomic_bool isClosed_;
+    std::function<void(spConnection)> connectionCloseCb_;
+    std::function<void(spConnection)> connectionErrorCb_;
+    std::function<void(spConnection)> connectionReadCb_;
+    std::function<void(spConnection)> sendOverCb_;
 public:
     Connection(Socket *clientSock,EventLoop *loop);
     ~Connection();
@@ -29,15 +33,19 @@ public:
     HttpParser &parser();
     Buffer & ouputBuf();
 
-    void connection_close();
-    void connection_error();
-    void connection_read();
+    void remove_channel_from_loop() const;
+    void set_is_closed();
+
     void send(const char *data,int len);
     void send(const std::string &data);
     void send_all_data();
 
-    void set_connection_close_cb(std::function<void()>func);
-    void set_connection_error_cb(std::function<void()>func);
-    void set_connection_read_cb(std::function<void(Connection *)>func);
-    void set_send_over_cb(std::function<void(Connection*)>func);
+    void connection_close();
+    void connection_error();
+    void connection_read();
+
+    void set_connection_close_cb(std::function<void(spConnection)>func);
+    void set_connection_error_cb(std::function<void(spConnection)>func);
+    void set_connection_read_cb(std::function<void(spConnection)>func);
+    void set_send_over_cb(std::function<void(spConnection)>func);
 };

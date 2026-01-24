@@ -20,9 +20,7 @@ TcpServer::~TcpServer(){
     for (auto &loop:subLoops_){
         delete loop;
     }
-    for(auto &it:connections_){
-        delete it.second;
-    }
+    
 }
 
 void TcpServer::start(){
@@ -33,32 +31,34 @@ void TcpServer::start(){
 }
 
 void TcpServer::connection_new(Socket *clientSock){
-    Connection *connection = new Connection(clientSock,subLoops_[clientSock->fd()%3]);
-    connection->set_connection_close_cb(std::bind(&TcpServer::connection_close,this,connection));
-    connection->set_connection_error_cb(std::bind(&TcpServer::handle_error_connection,this,connection));
+    spConnection connection(new Connection(clientSock,subLoops_[clientSock->fd()%3]));
+    connection->set_connection_close_cb(std::bind(&TcpServer::connection_close,this,std::placeholders::_1));
+    connection->set_connection_error_cb(std::bind(&TcpServer::handle_error_connection,this,std::placeholders::_1));
     connection->set_connection_read_cb(std::bind(&TcpServer::tcp_read,this,std::placeholders::_1));
     connection->set_send_over_cb(std::bind(&TcpServer::send_over,this,std::placeholders::_1));
     connections_[connection->fd()] = connection;
     printf("client(fd=%d,ip=%s,port=%d) connect\n",clientSock->fd(),clientSock->ip().c_str(),clientSock->port());
 }
 
-void TcpServer::connection_close(Connection *conn){
+void TcpServer::connection_close(spConnection conn){
     printf("client(fd=%d,ip=%s,port=%d) disconnect\n",conn->fd(),conn->ip().c_str(),conn->port());
     connections_.erase(conn->fd());
-    delete conn;
+    conn->remove_channel_from_loop();
+    conn->set_is_closed();
 }
 
-void TcpServer::handle_error_connection(Connection *conn){
+void TcpServer::handle_error_connection(spConnection conn){
     printf("event error\n");
     connections_.erase(conn->fd());
-    delete conn;
+    conn->remove_channel_from_loop();
+    conn->set_is_closed();
 }
 
-void TcpServer::tcp_read(Connection *conn){
+void TcpServer::tcp_read(spConnection conn){
     tcpReadCb_(conn);
 }
 
-void TcpServer::send_over(Connection *conn){
+void TcpServer::send_over(spConnection conn){
     printf("send(%d) over\n",conn->fd());
 }
 
@@ -66,6 +66,6 @@ void TcpServer::epoll_timeout(EventLoop *loop){
     printf("epoll timeout\n");
 }
 
-void TcpServer::set_tcp_read_cb(std::function<void(Connection *)> func){
+void TcpServer::set_tcp_read_cb(std::function<void(spConnection)> func){
     tcpReadCb_ = func;
 }

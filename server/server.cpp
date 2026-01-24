@@ -6,7 +6,7 @@ int main(int argc, char *argv[]){
         return -1;
     }
     HttpServer server(argv[1],atoi(argv[2]));
-    server.GET("/",[](HttpRequest *req,Connection *conn){
+    server.GET("/",[](HttpRequest *req,spConnection conn){
         HttpResponse resp;
         std::string html =
             "<!DOCTYPE html>\r\n"

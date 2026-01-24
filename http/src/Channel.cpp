@@ -67,6 +67,11 @@ void Channel::disable_write(){
     loop_->ep()->update_channel(this);
 }
 
+void Channel::disalbe_all(){
+    events_ = 0;
+    loop_->ep()->update_channel(this);
+}
+
 void Channel::handle(){
     // printf("events(%d):",fd_);
     if(revents_& EPOLLRDHUP){

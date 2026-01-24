@@ -8,7 +8,7 @@ EventLoop::~EventLoop(){
 }
 #include <sys/syscall.h>
 void EventLoop::run(){
-    printf("EventLoop run in %ld\n",syscall(SYS_gettid));
+    // printf("EventLoop run in %ld\n",syscall(SYS_gettid));
     while(true){
         std::vector<Channel *> chs = ep_->loop();
         if(chs.size()==0) epollTimeoutCb_(this);

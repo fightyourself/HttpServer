@@ -1,6 +1,6 @@
 #include "../include/Connection.h"
 
-Connection::Connection(Socket *clientSock,EventLoop *loop):clientSock_(clientSock),loop_(loop){
+Connection::Connection(Socket *clientSock,EventLoop *loop):clientSock_(clientSock),loop_(loop),isClosed_(false){
     clientChan_ = new Channel(clientSock->fd(),loop_);
     clientChan_->set_et();
     clientChan_->set_read_callback(std::bind(&Connection::connection_read,this));
@@ -11,6 +11,7 @@ Connection::Connection(Socket *clientSock,EventLoop *loop):clientSock_(clientSoc
 }
 
 Connection::~Connection(){
+    // printf("connection destruction\n");
     delete clientSock_;
     delete clientChan_;
 }
@@ -35,50 +36,54 @@ Buffer & Connection::ouputBuf(){
     return outputBuf_;
 }
 
+void Connection::remove_channel_from_loop()const{
+    loop_->ep()->remove_channel(clientChan_);
+}
 
-void Connection::set_connection_close_cb(std::function<void()>func){
+void Connection::set_is_closed() {
+    isClosed_ = true;
+}
+
+void Connection::set_connection_close_cb(std::function<void(spConnection)>func){
     connectionCloseCb_ = func;
 }
 
-void Connection::set_connection_error_cb(std::function<void()>func){
+void Connection::set_connection_error_cb(std::function<void(spConnection)>func){
     connectionErrorCb_ = func;
 }
 
-void Connection::set_connection_read_cb(std::function<void(Connection *)>func){
+void Connection::set_connection_read_cb(std::function<void(spConnection)>func){
     connectionReadCb_ = func;
 }
 
-void Connection::set_send_over_cb(std::function<void(Connection *)> func){
+void Connection::set_send_over_cb(std::function<void(spConnection)> func){
     sendOverCb_ = func;
 }
 
 
 void Connection::connection_close(){
-    connectionCloseCb_();
+    connectionCloseCb_(shared_from_this()); 
 }
 
 void Connection::connection_error(){
-    connectionErrorCb_();
+    connectionErrorCb_(shared_from_this());
 }
 
 void Connection::connection_read(){
-    char c;
-    if(recv(fd(),&c,1,MSG_PEEK)==0){
-        connection_close();
-    }else{
-        connectionReadCb_(this);
-    }
-    
+    connectionReadCb_(shared_from_this());
 }
 
 
 void Connection::send(const char *data,int len){
+    printf("send\n");
     outputBuf_.append(data,len);
     clientChan_->enable_write();
 }
 
 void Connection::send(const std::string&data){
-    send(data.data(),data.size());
+    if(!isClosed_){
+        send(data.data(),data.size());
+    }
 }
 
 void Connection::send_all_data(){
@@ -86,6 +91,6 @@ void Connection::send_all_data(){
     if(writen>0) outputBuf_.erase(0,writen);
     if(outputBuf_.size()==0) {
         clientChan_->disable_write();
-        sendOverCb_(this);
+        sendOverCb_(shared_from_this());
     }
 }

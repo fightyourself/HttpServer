@@ -19,6 +19,14 @@ void Epoll::update_channel(Channel *ch) const{
         ch->set_isInpoll();
     }
 }
+
+void Epoll::remove_channel(Channel *ch)const{
+    ch->disalbe_all();
+    if(ch->is_inpoll()){
+        epoll_ctl(epollFd_,EPOLL_CTL_DEL,ch->fd(),0);
+    }
+}
+
 #include <sys/syscall.h>
 std::vector<Channel *> Epoll::loop(int timeout){
     std::vector<Channel *> evs;

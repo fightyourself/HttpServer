@@ -20,7 +20,7 @@ std::vector<std::string> Router::split(const std::string &str, char delimiter) {
     return tokens; // 返回分割结果的向量
 }
 
-void Router::addRoute(const std::string& method,const std::string& pattern,std::function<void(HttpRequest *req,Connection *conn)> handler){
+void Router::addRoute(const std::string& method,const std::string& pattern,std::function<void(HttpRequest *,spConnection)> handler){
     if(roots_.find(method)==roots_.end()){
         roots_[method] = new Trie;
     }
@@ -32,15 +32,15 @@ void Router::addRoute(const std::string& method,const std::string& pattern,std::
 }
 
 
-void Router::GET(const std::string& pattern,std::function<void(HttpRequest *req,Connection *conn)> handler){
+void Router::GET(const std::string& pattern,std::function<void(HttpRequest *,spConnection)> handler){
     this->addRoute("GET",pattern,handler);
 }
 
-void Router::POST(const std::string& pattern,std::function<void(HttpRequest *req,Connection *conn)> handler){
+void Router::POST(const std::string& pattern,std::function<void(HttpRequest *,spConnection)> handler){
     this->addRoute("POST",pattern,handler);
 }
 
-void Router::handle(HttpRequest *req,Connection *conn){
+void Router::handle(HttpRequest *req,spConnection conn){
     std::vector<std::string> parts = split(req->path(),'/');
     std::string method = req->method();
     if(roots_.find(method)!=roots_.end()){
@@ -109,5 +109,4 @@ void Router::handle(HttpRequest *req,Connection *conn){
 )";
     resp.set_body(html);
     conn->send(resp.to_string());
-   
 }

@@ -2,17 +2,19 @@
 #include "TcpServer.h"
 #include "HttpResponse.h"
 #include "Router.h"
+#include "ThreadPool.h"
 class HttpServer{
 private:
     TcpServer tcpServer_;
     Router router_;
+    ThreadPool workThreadPool_;
 public:
     HttpServer(const std::string& ip,uint16_t port);
     ~HttpServer(); 
 
-    void GET(const std::string& pattern,std::function<void(HttpRequest *req,Connection *conn)> handler);
-    void POST(const std::string& pattern,std::function<void(HttpRequest *req,Connection *conn)> handler);
+    void GET(const std::string& pattern,std::function<void(HttpRequest *req,spConnection conn)> handler);
+    void POST(const std::string& pattern,std::function<void(HttpRequest *req,spConnection conn)> handler);
 
-    void handle_tcp_read(Connection *conn);
+    void handle_tcp_read(spConnection conn);
     void start();
 };

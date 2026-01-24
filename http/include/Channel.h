@@ -32,6 +32,7 @@ public:
     void enable_read();
     void enable_write();
     void disable_write();
+    void disalbe_all();
 
     void set_read_callback(std::function<void()>func);
     void set_disconnect_cb(std::function<void()>func);

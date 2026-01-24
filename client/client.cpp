@@ -44,6 +44,9 @@ int main(int argc, char *argv[]){
     //     recv(sockfd,buf,len,0);
     //     printf("recv:%s\n",buf);
     // }
+
+    // sleep(1000);
+
     std::string txt ="GET /index.html HTTP/1.1\r\nHost: www.example.com\r\nUser-Agent: Mozilla/5.0 (compatible; MyClient/1.0)\r\nAccept: text/html,application/xhtml+xml;q=0.9,*/*;q=0.8\r\nConnection: close\r\n\r\n";
     sprintf(buf,"%s",txt.c_str());
     while(true){
@@ -51,7 +54,7 @@ int main(int argc, char *argv[]){
             printf("send fail\n");
             return -1;
         }
-        sleep(2);
+        sleep(1000);
         // memset(buf,0,sizeof(buf));
     
         // if(recv(sockfd,buf,sizeof(buf),0)<=0){
