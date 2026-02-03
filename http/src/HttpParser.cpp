@@ -26,8 +26,16 @@ int HttpParser::get_line(char *buf){
     return 0;
 }
 
+HttpRequest HttpParser::req() const{
+    return req_;
+}
 
-int HttpParser::parse(HttpRequest * req){
+void HttpParser::clear_req(){
+    req_.clear();
+}
+
+
+int HttpParser::parse(){
     while(true){
         char line[2048];
         switch (state_){
@@ -55,7 +63,7 @@ int HttpParser::parse(HttpRequest * req){
                 if(strcasecmp(method,"GET")==0){
                     size_t t = j;
                     while(line[t] && line[t]!='?')++t;
-                    if(line[t]=='?')req->set_query_string(std::string(&line[t+1],i-t));
+                    if(line[t]=='?')req_.set_query_string(std::string(&line[t+1],i-t));
                 }
                 char path[1024];
                 len = i - j;
@@ -70,9 +78,9 @@ int HttpParser::parse(HttpRequest * req){
                 memcpy(version,reinterpret_cast<void*>(&line[j]),len);
                 version[len] = '\0';
 
-                req->set_method(method);
-                req->set_path(path);
-                req->set_version(version);
+                req_.set_method(method);
+                req_.set_path(path);
+                req_.set_version(version);
                 state_ = REQUEST_HEADER;
             }else return 0;
             break;
@@ -80,10 +88,10 @@ int HttpParser::parse(HttpRequest * req){
         case REQUEST_HEADER:{
             while(get_line(line)){
                 if(strcmp(line,"\r\n")==0){
-                    if(req->headers().find("Content-Length")!=req->headers().end()){
-                        req->set_content_length(atoi(req->headers()["Content-Length"].c_str()));
+                    if(req_.headers().find("Content-Length")!=req_.headers().end()){
+                        req_.set_content_length(atoi(req_.headers()["Content-Length"].c_str()));
                     }
-                    if(req->content_length() <=0) state_ = COMPLETE;
+                    if(req_.content_length() <=0) state_ = COMPLETE;
                     else state_ = REQUEST_BODY;
                     break;
                 }
@@ -95,15 +103,15 @@ int HttpParser::parse(HttpRequest * req){
                 j = i;
                 while(line[i]!='\r')i++;
                 std::string value(&line[j],i-j);
-                req->add_header(key,value);
+                req_.add_header(key,value);
             }
             if(state_ != REQUEST_HEADER) break;
             return 0;
         }
         case REQUEST_BODY:{
-            if(buf_.size()-pos_>=req->content_length()){
-                req->set_has_body();
-                req->set_body(std::string(&(buf_.data()[pos_]),req->content_length()));
+            if(buf_.size()-pos_>=req_.content_length()){
+                req_.set_has_body();
+                req_.set_body(std::string(&(buf_.data()[pos_]),req_.content_length()));
                 state_ = COMPLETE;
                 break;
             }

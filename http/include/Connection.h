@@ -3,8 +3,9 @@
 #include "Channel.h"
 #include "EventLoop.h"
 #include "Buffer.h"
-#include "../include/HttpParser.h"
-#include "../include/HttpRequest.h"
+#include "HttpParser.h"
+#include "HttpRequest.h"
+#include "TimeStamp.h"
 #include <memory>
 #include <atomic>
 
@@ -20,6 +21,7 @@ private:
     HttpParser parser_;
     Buffer outputBuf_;
     std::atomic_bool isClosed_;
+    TimeStamp lastTime_;
     std::function<void(spConnection)> connectionCloseCb_;
     std::function<void(spConnection)> connectionErrorCb_;
     std::function<void(spConnection)> connectionReadCb_;
@@ -31,11 +33,14 @@ public:
     std::string ip()const;
     uint16_t port() const;
     int fd() const;
+    EventLoop * loop() const;
+    TimeStamp lastTime() const;
     HttpParser &parser();
     Buffer & ouputBuf();
 
     void remove_channel_from_loop();
     void set_is_closed();
+    void update_time_stamp();
 
     void send(const std::string &data);
     void send_all_data();

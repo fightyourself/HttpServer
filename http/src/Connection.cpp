@@ -1,7 +1,7 @@
 #include "../include/Connection.h"
 
 Connection::Connection(std::unique_ptr<Socket> clientSock,EventLoop *loop):loop_(loop),clientSock_(std::move(clientSock)),
-clientChan_(new Channel(clientSock_->fd(),loop_)),parser_(),outputBuf_(),isClosed_(false),connectionCloseCb_(),
+clientChan_(new Channel(clientSock_->fd(),loop_)),parser_(),outputBuf_(),isClosed_(false),lastTime_(),connectionCloseCb_(),
 connectionErrorCb_(),connectionReadCb_(),sendOverCb_(){
     clientChan_->set_et();
     clientChan_->set_read_callback(std::bind(&Connection::connection_read,this));
@@ -27,6 +27,14 @@ int Connection::fd() const {
     return clientSock_->fd();
 }
 
+EventLoop* Connection::loop() const{
+    return loop_;
+}
+
+TimeStamp Connection::lastTime() const{
+    return lastTime_;
+}
+
 HttpParser & Connection::parser(){
     return parser_;
 }
@@ -41,6 +49,10 @@ void Connection::remove_channel_from_loop(){
 
 void Connection::set_is_closed() {
     isClosed_ = true;
+}
+
+void Connection::update_time_stamp() {
+    lastTime_ = TimeStamp::now();
 }
 
 void Connection::set_connection_close_cb(std::function<void(spConnection)>func){
@@ -73,7 +85,7 @@ void Connection::connection_read(){
 }
 
 void Connection::send_init(const std::string&data){
-    printf("Connectin::send_init() in thread:%d\n",syscall(SYS_gettid));
+    // printf("Connectin::send_init() in thread:%d\n",syscall(SYS_gettid));
     outputBuf_.append(data.data(),data.size());
     clientChan_->enable_write();
 }
@@ -82,15 +94,15 @@ void Connection::send_init(const std::string&data){
 
 void Connection::send(const std::string&data){
     if(isClosed_) {
-        printf("connection already closed, no send\n");
+        // printf("connection already closed, no send\n");
         return;
     }
     if(loop_->isInRunThread()){
-        printf("Connection::send() in run thread:%d\n",syscall(SYS_gettid));
+        // printf("Connection::send() in run thread:%d\n",syscall(SYS_gettid));
         send_init(data);
     }else{
-        printf("Connection::send() not in run thread:%d\n",syscall(SYS_gettid));
-        loop_->notify_send_event(std::bind(&Connection::send_init,this,data));
+        // printf("Connection::send() not in run thread:%d\n",syscall(SYS_gettid));
+        loop_->queue_in_loop(std::bind(&Connection::send_init,this,data));
     }
 }
 

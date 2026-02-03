@@ -19,19 +19,22 @@ void HttpServer::handle_tcp_read(spConnection conn){
         }else if(readn==-1 && errno == EINTR){
             continue;
         }else if(readn==-1 && (errno==EAGAIN||errno == EWOULDBLOCK)){
-            HttpRequest *req = new HttpRequest;
-            while(conn->parser().parse(req)){
+            conn->update_time_stamp();
+            while(conn->parser().parse()){
+                HttpRequest req = conn->parser().req();
                 if(workThreadPool_.size()>0){
-                    workThreadPool_.add_task([&](){
-                        printf("method = %s,path = %s, version = %s\n",req->method().c_str(),req->path().c_str(),req->version().c_str());
+                    workThreadPool_.add_task([=]()mutable{
+                        printf("method = %s,path = %s, version = %s\n",req.method().c_str(),req.path().c_str(),req.version().c_str());
                         // printf("query string:%s\n",req->queryString().c_str());
-                        router_.handle(req,conn);
+                        router_.handle(&req,conn);
                     });
                 }else{
-                    printf("method = %s,path = %s, version = %s\n",req->method().c_str(),req->path().c_str(),req->version().c_str());
+                    HttpRequest req = conn->parser().req();
+                    printf("method = %s,path = %s, version = %s\n",req.method().c_str(),req.path().c_str(),req.version().c_str());
                     // printf("query string:%s\n",req->queryString().c_str());
-                    router_.handle(req,conn);
+                    router_.handle(&req,conn);
                 }
+                conn->parser().clear_req();
             }
             break;
         }else if(readn==0){

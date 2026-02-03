@@ -70,3 +70,14 @@ void HttpRequest::set_body(const std::string &body){
 void HttpRequest::set_query_string(const std::string &queryString){
     queryString_ = queryString;
 }
+
+void HttpRequest::clear(){
+    method_.clear();
+    path_.clear();
+    version_.clear();
+    headers_.clear();
+    contentLength_ = 0;
+    hasBody_ = false;
+    body_.clear();
+    queryString_.clear();
+}

@@ -11,6 +11,7 @@ private:
     EventLoop mainLoop_;
     std::vector<std::unique_ptr<EventLoop>>subLoops_;
     Acceptor acceptor_;
+    std::mutex mtx_;
     std::map<int,spConnection> connections_;
     ThreadPool ioThreadPool_;
     std::function<void(spConnection)> tcpReadCb_;

@@ -33,4 +33,5 @@ public:
     void set_has_body();
     void set_body(const std::string& body);
     void set_query_string(const std::string& queryString);
+    void clear();
 };
