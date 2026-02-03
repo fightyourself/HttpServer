@@ -26,13 +26,13 @@ void HttpServer::handle_tcp_read(spConnection conn){
                 HttpRequest req = conn->parser().req();
                 if(workThreadPool_.size()>0){
                     workThreadPool_.add_task([=]()mutable{
-                        printf("method = %s,path = %s, version = %s\n",req.method().c_str(),req.path().c_str(),req.version().c_str());
+                        // printf("method = %s,path = %s, version = %s\n",req.method().c_str(),req.path().c_str(),req.version().c_str());
                         // printf("query string:%s\n",req->queryString().c_str());
                         router_.handle(&req,conn);
                     });
                 }else{
                     HttpRequest req = conn->parser().req();
-                    printf("method = %s,path = %s, version = %s\n",req.method().c_str(),req.path().c_str(),req.version().c_str());
+                    // printf("method = %s,path = %s, version = %s\n",req.method().c_str(),req.path().c_str(),req.version().c_str());
                     // printf("query string:%s\n",req->queryString().c_str());
                     router_.handle(&req,conn);
                 }

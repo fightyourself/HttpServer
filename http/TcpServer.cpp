@@ -26,7 +26,7 @@ void TcpServer::start(){
 }
 
 void TcpServer::connection_new(std::unique_ptr<Socket> clientSock){
-    printf("client(fd=%d,ip=%s,port=%d) connect\n",clientSock->fd(),clientSock->ip().c_str(),clientSock->port());
+    // printf("client(fd=%d,ip=%s,port=%d) connect\n",clientSock->fd(),clientSock->ip().c_str(),clientSock->port());
     int fd = clientSock->fd();
     spConnection connection = std::make_shared<Connection>(std::move(clientSock),subLoops_[fd%subLoopNum].get());
     connection->set_connection_close_cb(std::bind(&TcpServer::connection_close,this,std::placeholders::_1));
@@ -40,7 +40,7 @@ void TcpServer::connection_new(std::unique_ptr<Socket> clientSock){
 }
 
 void TcpServer::connection_close(spConnection conn){
-    printf("client(fd=%d,ip=%s,port=%d) disconnect\n",conn->fd(),conn->ip().c_str(),conn->port());
+    // printf("client(fd=%d,ip=%s,port=%d) disconnect\n",conn->fd(),conn->ip().c_str(),conn->port());
     conn->remove_channel_from_loop();
     conn->set_is_closed();
     subLoops_[conn->fd()%subLoopNum]->remove_connection(conn);
